@@ -21,4 +21,14 @@ describe("HomePage", () => {
     expect(html).toContain("Python notebook");
     expect(html).toContain("JavaScript dashboard");
   });
+
+  it("includes four medicaid autism claims visualizations", () => {
+    const html = renderToStaticMarkup(<HomePage />);
+
+    expect(html).toContain("Medicaid autism claims visualizations");
+    expect(html).toContain("Autism claims as % of total Medicaid claims (by state)");
+    expect(html).toContain("Autism claims per 10,000 Medicaid members");
+    expect(html).toContain("Autism service category mix");
+    expect(html).toContain("Year-over-year autism claims trend");
+  });
 });
