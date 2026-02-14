@@ -1,6 +1,6 @@
 # HHS Open Data API Gateway
 
-A Vercel-ready Next.js service that exposes a clean JSON API for searching datasets from [opendata.hhs.gov](https://opendata.hhs.gov/).
+A Vercel-ready Next.js service that exposes a clean JSON API for searching datasets from [catalog.data.gov](https://catalog.data.gov/) using an HHS publisher filter.
 
 ## Why this exists
 
@@ -63,10 +63,22 @@ curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=10&sort=rece
       ]
     }
   ],
-  "source": "https://opendata.hhs.gov/api/3/action/package_search",
+  "source": "https://catalog.data.gov/api/3/action/package_search",
   "generatedAt": "2026-02-14T00:00:00.000Z"
 }
 ```
+
+## Real working example: API + visualization
+
+Run the app, hit the API, and generate a quick visualization from real response data:
+
+```bash
+npm run dev
+curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=25&sort=recent" -o data/hospital-live.json
+node scripts/format-viz.mjs data/hospital-live.json
+```
+
+This writes an HTML artifact at `data/hospital-live-viz.html` that renders a simple bar chart of resource formats from the API payload.
 
 ## Local development
 

@@ -1,7 +1,11 @@
+import { ProxyAgent } from "undici";
 import { z } from "zod";
 
-const CKAN_BASE = "https://opendata.hhs.gov/api/3/action/package_search";
+const CKAN_BASE = "https://catalog.data.gov/api/3/action/package_search";
+const HHS_ORG_FILTER = "organization:hhs-gov";
 const sortValues = ["recent", "relevance", "title"] as const;
+const proxyUrl = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY ?? process.env.https_proxy;
+const proxyDispatcher = proxyUrl ? new ProxyAgent(proxyUrl) : undefined;
 
 const querySchema = z.object({
   q: z.string().trim().optional().default(""),
@@ -83,7 +87,7 @@ export function parseDatasetQuery(params: URLSearchParams): DatasetQuery {
 }
 
 function buildFilterQuery(query: DatasetQuery): string[] {
-  const clauses: string[] = [];
+  const clauses: string[] = [HHS_ORG_FILTER];
 
   if (query.tag) {
     clauses.push(`tags:${JSON.stringify(query.tag)}`);
@@ -117,8 +121,9 @@ export async function searchDatasets(query: DatasetQuery): Promise<DatasetSearch
     headers: {
       Accept: "application/json"
     },
-    next: { revalidate: 300 }
-  });
+    next: { revalidate: 300 },
+    ...(proxyDispatcher ? { dispatcher: proxyDispatcher } : {})
+  } as RequestInit);
 
   if (!response.ok) {
     throw new Error(`Upstream request failed with status ${response.status}`);

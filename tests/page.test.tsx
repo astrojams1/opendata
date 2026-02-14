@@ -16,7 +16,8 @@ describe("HomePage", () => {
 
     const matches = html.match(/\/api\/datasets\?/g) ?? [];
     expect(matches.length).toBeGreaterThanOrEqual(11);
-    expect(html).toContain("API in use: code snippets");
+    expect(html).toContain("API in use: live visualization");
+    expect(html).toContain("Loading live API example…");
     expect(html).toContain("Python notebook");
     expect(html).toContain("JavaScript dashboard");
   });

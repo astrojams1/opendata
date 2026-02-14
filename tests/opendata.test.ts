@@ -82,7 +82,27 @@ describe("searchDatasets", () => {
       tags: ["health"],
       resources: [{ format: "CSV" }]
     });
+    expect(result.source).toBe("https://catalog.data.gov/api/3/action/package_search");
     expect(result.generatedAt).toMatch(/T/);
+  });
+
+  it("always scopes search to HHS organization", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        result: {
+          count: 0,
+          results: []
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await searchDatasets({ q: "hospital", page: 1, pageSize: 20, sort: "recent" });
+
+    const url = new URL(fetchSpy.mock.calls[0][0] as string);
+    expect(url.searchParams.get("fq")).toContain("organization:hhs-gov");
   });
 
   it("sends format and tag filters to upstream", async () => {
@@ -109,6 +129,7 @@ describe("searchDatasets", () => {
 
     const url = new URL(fetchSpy.mock.calls[0][0] as string);
     expect(url.searchParams.get("sort")).toBe("score desc, metadata_modified desc");
+    expect(url.searchParams.get("fq")).toContain("organization:hhs-gov");
     expect(url.searchParams.get("fq")).toContain('tags:"health equity"');
     expect(url.searchParams.get("fq")).toContain('res_format:"JSON"');
   });
