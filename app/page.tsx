@@ -1,3 +1,5 @@
+import { LiveFormatViz } from "@/components/live-format-viz";
+
 const quickStartExample = "/api/datasets?q=hospital&page=1&pageSize=10&sort=recent&format=CSV";
 
 const sampleQueries = [
@@ -56,15 +58,15 @@ const sampleQueries = [
 const usageSnippets = [
   {
     title: "Python notebook",
-    code: `import requests\n\nurl = \"https://hhs-open-data-api.vercel.app/api/datasets\"\nparams = {\"q\": \"hospital\", \"pageSize\": 5, \"sort\": \"recent\"}\nresponse = requests.get(url, params=params, timeout=30)\nresponse.raise_for_status()\ndatasets = response.json()[\"datasets\"]\nprint([item[\"title\"] for item in datasets])`
+    code: `import requests\n\nurl = "https://hhs-open-data-api.vercel.app/api/datasets"\nparams = {"q": "hospital", "pageSize": 5, "sort": "recent"}\nresponse = requests.get(url, params=params, timeout=30)\nresponse.raise_for_status()\ndatasets = response.json()["datasets"]\nprint([item["title"] for item in datasets])`
   },
   {
     title: "R analytics script",
-    code: `library(httr2)\nlibrary(jsonlite)\n\nresp <- request(\"https://hhs-open-data-api.vercel.app/api/datasets\") |>\n  req_url_query(q = \"medicare\", pageSize = 10, format = \"CSV\") |>\n  req_perform()\n\nbody <- resp_body_string(resp) |> fromJSON()\nprint(body$filters)`
+    code: `library(httr2)\nlibrary(jsonlite)\n\nresp <- request("https://hhs-open-data-api.vercel.app/api/datasets") |>\n  req_url_query(q = "medicare", pageSize = 10, format = "CSV") |>\n  req_perform()\n\nbody <- resp_body_string(resp) |> fromJSON()\nprint(body$filters)`
   },
   {
     title: "JavaScript dashboard",
-    code: `const params = new URLSearchParams({\n  q: \"behavioral health\",\n  page: \"1\",\n  pageSize: \"8\",\n  sort: \"relevance\"\n});\n\nconst res = await fetch(\`/api/datasets?\${params.toString()}\`);\nconst data = await res.json();\nrenderCards(data.datasets);`
+    code: `const params = new URLSearchParams({\n  q: "behavioral health",\n  page: "1",\n  pageSize: "8",\n  sort: "relevance"\n});\n\nconst res = await fetch(\`/api/datasets?\${params.toString()}\`);\nconst data = await res.json();\nrenderCards(data.datasets);`
   }
 ];
 
@@ -96,6 +98,15 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section>
+        <h2>API in use: live visualization</h2>
+        <p>
+          This chart runs a real request against <code>/api/datasets</code> and visualizes the
+          resource format distribution from the returned page.
+        </p>
+        <LiveFormatViz />
       </section>
 
       <section>

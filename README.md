@@ -68,6 +68,18 @@ curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=10&sort=rece
 }
 ```
 
+## Real working example: API + visualization
+
+Run the app, hit the API, and generate a quick visualization from real response data:
+
+```bash
+npm run dev
+curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=25&sort=recent" -o data/hospital-live.json
+node scripts/format-viz.mjs data/hospital-live.json
+```
+
+This writes an HTML artifact at `data/hospital-live-viz.html` that renders a simple bar chart of resource formats from the API payload.
+
 ## Local development
 
 ```bash
