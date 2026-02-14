@@ -26,7 +26,7 @@ describe("GET /api/datasets", () => {
       sort: "recent",
       filters: { tag: null, format: null },
       datasets: [],
-      source: "https://opendata.hhs.gov/api/3/action/package_search",
+      source: "https://catalog.data.gov/api/3/action/package_search",
       generatedAt: "2026-02-14T00:00:00.000Z"
     });
 

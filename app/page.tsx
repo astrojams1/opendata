@@ -77,7 +77,7 @@ export default function HomePage() {
       <h1>Reliable health data discovery for research and product teams.</h1>
       <p className="lead">
         A stable API gateway for analysts, data scientists, and builders who want clean dataset
-        search responses from <code>opendata.hhs.gov</code> with predictable pagination, filtering,
+        search responses from <code>catalog.data.gov</code> with predictable pagination, filtering,
         and caching.
       </p>
 

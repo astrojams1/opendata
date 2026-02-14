@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "HHS Open Data API Gateway",
-  description: "Community-friendly API access to opendata.hhs.gov"
+  description: "Community-friendly API access to catalog.data.gov"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

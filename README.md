@@ -1,6 +1,6 @@
 # HHS Open Data API Gateway
 
-A Vercel-ready Next.js service that exposes a clean JSON API for searching datasets from [opendata.hhs.gov](https://opendata.hhs.gov/).
+A Vercel-ready Next.js service that exposes a clean JSON API for searching datasets from [catalog.data.gov](https://catalog.data.gov/) using an HHS publisher filter.
 
 ## Why this exists
 
@@ -63,7 +63,7 @@ curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=10&sort=rece
       ]
     }
   ],
-  "source": "https://opendata.hhs.gov/api/3/action/package_search",
+  "source": "https://catalog.data.gov/api/3/action/package_search",
   "generatedAt": "2026-02-14T00:00:00.000Z"
 }
 ```
