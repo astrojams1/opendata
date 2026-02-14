@@ -101,6 +101,9 @@ export default function HomePage() {
         dataset titles, descriptions, tags, and resource links. It does not
         serve the underlying data files themselves.
       </p>
+      <p>
+        <a href="/visualizations">View live API visualizations &rarr;</a>
+      </p>
 
       <section>
         <h2>Base endpoint</h2>
