@@ -1,11 +1,15 @@
 import { z } from "zod";
 
 const CKAN_BASE = "https://opendata.hhs.gov/api/3/action/package_search";
+const sortValues = ["recent", "relevance", "title"] as const;
 
 const querySchema = z.object({
   q: z.string().trim().optional().default(""),
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20)
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+  sort: z.enum(sortValues).default("recent"),
+  tag: z.string().trim().min(1).optional(),
+  format: z.string().trim().min(1).optional()
 });
 
 const packageSchema = z.object({
@@ -51,16 +55,45 @@ export type DatasetSearchResult = {
   pageSize: number;
   total: number;
   totalPages: number;
+  sort: DatasetQuery["sort"];
+  filters: {
+    tag: string | null;
+    format: string | null;
+  };
   datasets: DatasetSummary[];
   source: string;
+  generatedAt: string;
+};
+
+const sortToCkan: Record<DatasetQuery["sort"], string> = {
+  recent: "metadata_modified desc",
+  relevance: "score desc, metadata_modified desc",
+  title: "title_string asc"
 };
 
 export function parseDatasetQuery(params: URLSearchParams): DatasetQuery {
   return querySchema.parse({
     q: params.get("q") ?? "",
     page: params.get("page") ?? 1,
-    pageSize: params.get("pageSize") ?? 20
+    pageSize: params.get("pageSize") ?? 20,
+    sort: params.get("sort") ?? "recent",
+    tag: params.get("tag") ?? undefined,
+    format: params.get("format") ?? undefined
   });
+}
+
+function buildFilterQuery(query: DatasetQuery): string[] {
+  const clauses: string[] = [];
+
+  if (query.tag) {
+    clauses.push(`tags:${JSON.stringify(query.tag)}`);
+  }
+
+  if (query.format) {
+    clauses.push(`res_format:${JSON.stringify(query.format.toUpperCase())}`);
+  }
+
+  return clauses;
 }
 
 function buildCkanUrl(query: DatasetQuery): URL {
@@ -68,7 +101,13 @@ function buildCkanUrl(query: DatasetQuery): URL {
   url.searchParams.set("q", query.q);
   url.searchParams.set("rows", String(query.pageSize));
   url.searchParams.set("start", String((query.page - 1) * query.pageSize));
-  url.searchParams.set("sort", "metadata_modified desc");
+  url.searchParams.set("sort", sortToCkan[query.sort]);
+
+  const clauses = buildFilterQuery(query);
+  if (clauses.length > 0) {
+    url.searchParams.set("fq", clauses.join(" AND "));
+  }
+
   return url;
 }
 
@@ -97,7 +136,7 @@ export async function searchDatasets(query: DatasetQuery): Promise<DatasetSearch
     resources: item.resources.map((resource) => ({
       id: resource.id,
       name: resource.name ?? "Untitled resource",
-      format: resource.format ?? null,
+      format: resource.format ? resource.format.toUpperCase() : null,
       url: resource.url ?? null
     }))
   }));
@@ -110,7 +149,13 @@ export async function searchDatasets(query: DatasetQuery): Promise<DatasetSearch
     pageSize: query.pageSize,
     total: parsed.result.count,
     totalPages,
+    sort: query.sort,
+    filters: {
+      tag: query.tag ?? null,
+      format: query.format?.toUpperCase() ?? null
+    },
     datasets,
-    source: CKAN_BASE
+    source: CKAN_BASE,
+    generatedAt: new Date().toISOString()
   };
 }

@@ -9,13 +9,26 @@ afterEach(() => {
 describe("parseDatasetQuery", () => {
   it("uses defaults when missing values", () => {
     const parsed = parseDatasetQuery(new URLSearchParams());
-    expect(parsed).toEqual({ q: "", page: 1, pageSize: 20 });
+    expect(parsed).toEqual({ q: "", page: 1, pageSize: 20, sort: "recent" });
   });
 
   it("throws for invalid page size", () => {
-    expect(() =>
-      parseDatasetQuery(new URLSearchParams("pageSize=999"))
-    ).toThrowError();
+    expect(() => parseDatasetQuery(new URLSearchParams("pageSize=999"))).toThrowError();
+  });
+
+  it("parses optional filters", () => {
+    const parsed = parseDatasetQuery(
+      new URLSearchParams("q=cancer&page=2&pageSize=5&sort=title&tag=research&format=csv")
+    );
+
+    expect(parsed).toEqual({
+      q: "cancer",
+      page: 2,
+      pageSize: 5,
+      sort: "title",
+      tag: "research",
+      format: "csv"
+    });
   });
 });
 
@@ -39,8 +52,8 @@ describe("searchDatasets", () => {
                 resources: [
                   {
                     id: "res-1",
-                    name: "CSV",
-                    format: "CSV",
+                    name: "csv export",
+                    format: "csv",
                     url: "https://example.com/data.csv"
                   }
                 ]
@@ -51,15 +64,53 @@ describe("searchDatasets", () => {
       })
     );
 
-    const result = await searchDatasets({ q: "hospital", page: 1, pageSize: 10 });
+    const result = await searchDatasets({
+      q: "hospital",
+      page: 1,
+      pageSize: 10,
+      sort: "recent",
+      format: "csv"
+    });
 
     expect(result.total).toBe(1);
     expect(result.totalPages).toBe(1);
+    expect(result.sort).toBe("recent");
+    expect(result.filters).toEqual({ tag: null, format: "CSV" });
     expect(result.datasets[0]).toMatchObject({
       id: "ds-1",
       title: "Dataset One",
-      tags: ["health"]
+      tags: ["health"],
+      resources: [{ format: "CSV" }]
     });
+    expect(result.generatedAt).toMatch(/T/);
+  });
+
+  it("sends format and tag filters to upstream", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        success: true,
+        result: {
+          count: 0,
+          results: []
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await searchDatasets({
+      q: "",
+      page: 1,
+      pageSize: 20,
+      sort: "relevance",
+      tag: "health equity",
+      format: "json"
+    });
+
+    const url = new URL(fetchSpy.mock.calls[0][0] as string);
+    expect(url.searchParams.get("sort")).toBe("score desc, metadata_modified desc");
+    expect(url.searchParams.get("fq")).toContain('tags:"health equity"');
+    expect(url.searchParams.get("fq")).toContain('res_format:"JSON"');
   });
 
   it("throws when upstream fails", async () => {
@@ -72,7 +123,7 @@ describe("searchDatasets", () => {
     );
 
     await expect(
-      searchDatasets({ q: "", page: 1, pageSize: 10 })
+      searchDatasets({ q: "", page: 1, pageSize: 10, sort: "recent" })
     ).rejects.toThrow("Upstream request failed");
   });
 });

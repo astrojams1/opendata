@@ -22,11 +22,14 @@ Search and paginate HHS datasets.
 - `q` *(string, optional)*: full-text query.
 - `page` *(number, default `1`)*: 1-indexed page.
 - `pageSize` *(number, default `20`, max `100`)*.
+- `sort` *(enum: `recent` | `relevance` | `title`, default `recent`)*.
+- `tag` *(string, optional)*: exact tag filter.
+- `format` *(string, optional)*: resource format filter (e.g. `CSV`, `JSON`).
 
 #### Example
 
 ```bash
-curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=10"
+curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=10&sort=recent&format=CSV"
 ```
 
 #### Example response
@@ -38,6 +41,11 @@ curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=10"
   "pageSize": 10,
   "total": 351,
   "totalPages": 36,
+  "sort": "recent",
+  "filters": {
+    "tag": null,
+    "format": "CSV"
+  },
   "datasets": [
     {
       "id": "...",
@@ -55,7 +63,8 @@ curl "http://localhost:3000/api/datasets?q=hospital&page=1&pageSize=10"
       ]
     }
   ],
-  "source": "https://opendata.hhs.gov/api/3/action/package_search"
+  "source": "https://opendata.hhs.gov/api/3/action/package_search",
+  "generatedAt": "2026-02-14T00:00:00.000Z"
 }
 ```
 
