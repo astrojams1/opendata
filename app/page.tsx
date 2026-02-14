@@ -1,4 +1,10 @@
 import { LiveFormatViz } from "@/components/live-format-viz";
+import {
+  buildAutismClaimsByStatePercent,
+  buildAutismClaimsPer10kMembers,
+  buildAutismServiceMix,
+  buildAutismYearlyTrend
+} from "@/lib/visualization";
 
 const quickStartExample = "/api/datasets?q=hospital&page=1&pageSize=10&sort=recent&format=CSV";
 
@@ -70,10 +76,40 @@ const usageSnippets = [
   }
 ];
 
+const medicaidStateClaims = [
+  { state: "CA", totalClaims: 6500000, autismClaims: 121000, members: 1450000 },
+  { state: "TX", totalClaims: 5700000, autismClaims: 92000, members: 1320000 },
+  { state: "NY", totalClaims: 4300000, autismClaims: 88000, members: 980000 },
+  { state: "FL", totalClaims: 3900000, autismClaims: 74000, members: 910000 },
+  { state: "PA", totalClaims: 2500000, autismClaims: 51000, members: 640000 },
+  { state: "IL", totalClaims: 2300000, autismClaims: 47000, members: 600000 }
+];
+
+const medicaidServiceMix = [
+  { category: "ABA therapy", claims: 223000 },
+  { category: "Speech therapy", claims: 118000 },
+  { category: "Occupational therapy", claims: 97000 },
+  { category: "Behavioral diagnostics", claims: 73000 },
+  { category: "Care coordination", claims: 61000 }
+];
+
+const medicaidYearlyTrend = [
+  { year: 2020, claims: 296000, spendingMillions: 945 },
+  { year: 2021, claims: 322000, spendingMillions: 1024 },
+  { year: 2022, claims: 349000, spendingMillions: 1122 },
+  { year: 2023, claims: 376000, spendingMillions: 1211 },
+  { year: 2024, claims: 404000, spendingMillions: 1318 }
+];
+
 export default function HomePage() {
+  const stateShare = buildAutismClaimsByStatePercent(medicaidStateClaims);
+  const stateRate = buildAutismClaimsPer10kMembers(medicaidStateClaims);
+  const serviceMix = buildAutismServiceMix(medicaidServiceMix);
+  const yearlyTrend = buildAutismYearlyTrend(medicaidYearlyTrend);
+
   return (
     <main className="container">
-      <p className="eyebrow">HHS // OPEN DATA // API</p>
+      <p className="eyebrow">HHS Open Data API</p>
       <h1>Reliable health data discovery for research and product teams.</h1>
       <p className="lead">
         A stable API gateway for analysts, data scientists, and builders who want clean dataset
@@ -107,6 +143,72 @@ export default function HomePage() {
           resource format distribution from the returned page.
         </p>
         <LiveFormatViz />
+      </section>
+
+      <section>
+        <h2>Medicaid autism claims visualizations</h2>
+        <p>Illustrative Medicaid claims cuts for autism services, shown with direct comparisons.</p>
+        <div className="vizGrid">
+          <article className="vizCard">
+            <h3>Autism claims as % of total Medicaid claims (by state)</h3>
+            <ul className="vizList">
+              {stateShare.map((item) => (
+                <li key={item.label}>
+                  <span className="vizLabel">{item.label}</span>
+                  <div className="vizTrack" aria-hidden="true">
+                    <div className="vizBar" style={{ width: `${item.percent}%` }} />
+                  </div>
+                  <span className="vizPercent">{item.percent.toFixed(2)}%</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="vizCard">
+            <h3>Autism claims per 10,000 Medicaid members</h3>
+            <ul className="vizList">
+              {stateRate.map((item) => (
+                <li key={item.label}>
+                  <span className="vizLabel">{item.label}</span>
+                  <div className="vizTrack" aria-hidden="true">
+                    <div className="vizBar" style={{ width: `${item.percent}%` }} />
+                  </div>
+                  <span className="vizPercent">{item.value.toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="vizCard">
+            <h3>Autism service category mix</h3>
+            <ul className="vizList">
+              {serviceMix.map((item) => (
+                <li key={item.label}>
+                  <span className="vizLabel">{item.label}</span>
+                  <div className="vizTrack" aria-hidden="true">
+                    <div className="vizBar" style={{ width: `${item.percent}%` }} />
+                  </div>
+                  <span className="vizPercent">{item.percent.toFixed(1)}%</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+
+          <article className="vizCard">
+            <h3>Year-over-year autism claims trend</h3>
+            <ul className="vizList">
+              {yearlyTrend.map((item) => (
+                <li key={item.label}>
+                  <span className="vizLabel">{item.label}</span>
+                  <div className="vizTrack" aria-hidden="true">
+                    <div className="vizBar" style={{ width: `${item.percent}%` }} />
+                  </div>
+                  <span className="vizPercent">{item.value.toLocaleString()}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </div>
       </section>
 
       <section>
